@@ -72,8 +72,8 @@
 
     .bottom-left-image {
       position: fixed;
-      bottom: -200px;
-      left: -430px;
+      bottom: -280px;
+      left: -500px;
       width: 1000px;
       height: auto;
       transform: rotate(30deg);
@@ -84,7 +84,7 @@
   <!-- AR.js scene -->
   <a-scene embedded arjs="debugUIEnabled: false;">
     <!-- Camera configuration for AR.js -->
-    <a-marker preset="custom" type="pattern" url="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/pattern.patt?v=1737512002409">
+    <a-marker preset="custom" type="pattern" url="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/pattern-%D0%91%D0%B5%D0%B7%20%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8-1.patt?v=1737524508079">
       <!-- Add a 3D model here -->
       <a-entity 
         id="pickle"
@@ -192,6 +192,14 @@
     // Show dialog when marker is detected
     document.querySelector('a-marker').addEventListener('markerFound', () => {
       dialog.style.display = 'block';
+      
+      pickle.setAttribute("visible",true);
+      brain.setAttribute("visible",false);
+      heart.setAttribute("visible",false);
+      guts.setAttribute("visible",false);
+      lungs.setAttribute("visible",false);
+      pechen.setAttribute("visible",false);
+      jeludok.setAttribute("visible",false);
     });
 
     // Hide dialog and response window when marker is lost
@@ -257,7 +265,7 @@
       const lastBotMessageText = liMessages.messages[0].payload.text;
       
       UpdateModel(organ);
-      botResponseElement.textContent = answer;
+      botResponseElement.textContent = organ;
       
          // Return the bottom-left image to its initial state
       const bottomLeftImage = document.querySelector('.bottom-left-image');
