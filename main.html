@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Виртуальный помощник</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/1.7.2/aframe/build/aframe-ar.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: "Press Start 2P", cursive;
+      background-color: #0a0;
+      color: #0f0;
+    }
+
+    @font-face {
+      font-family: "Press Start 2P";
+      src: url("https://fonts.cdnfonts.com/s/60935/PressStart2P-Regular.woff") format("woff");
+    }
+
+    #dialog, #botResponseWindow {
+      position: absolute;
+      background: #003300;
+      color: #00ff00;
+      border: 3px solid #00cc00;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+      font-family: "Press Start 2P", cursive;
+    }
+
+    #dialog {
+      top: 20px;
+      left: 20px;
+      width: 320px;
+    }
+
+    #botResponseWindow {
+      margin-top: 15px;
+      top: 150px;
+      left: 20px;
+      width: 320px;
+    }
+
+    input[type="text"] {
+      width: calc(100% - 25px);
+      padding: 5px;
+      border: 2px solid #00cc00;
+      border-radius: 5px;
+      background: #001a00;
+      color: #0f0;
+      font-family: "Press Start 2P", cursive;
+    }
+
+    button {
+      margin-top: 10px;
+      margin-left: 0px;
+      padding: 5px 10px;
+      border: 2px solid #00cc00;
+      background-color: #002200;
+      color: #00ff00;
+      border-radius: 5px;
+      font-family: "Press Start 2P", cursive;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #003300;
+    }
+
+    .bottom-left-image {
+      position: fixed;
+      bottom: -200px;
+      left: -430px;
+      width: 1000px;
+      height: auto;
+      transform: rotate(30deg);
+    }
+  </style>
+</head>
+<body>
+  <!-- AR.js scene -->
+  <a-scene embedded arjs="debugUIEnabled: false;">
+    <!-- Camera configuration for AR.js -->
+    <a-marker preset="custom" type="pattern" url="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/pattern.patt?v=1737512002409">
+      <!-- Add a 3D model here -->
+      <a-entity 
+        id="pickle"
+        gltf-model="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/pickle_rick_popka_edition(1).gltf?v=1737520610806"
+        scale="0.5 0.5 0.5"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-entity>
+      
+      <a-entity 
+        id="brain"
+        gltf-model="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/brain_low_glb.gltf?v=1737520593054"
+        scale="0.1 0.1 0.1"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-entity>
+      
+      <a-entity 
+        id="heart"
+        gltf-model="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/heart_glb.gltf?v=1737522606392"
+        scale="0.1 0.1 0.1"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-entity>
+      
+      <a-entity 
+        id="guts"
+        gltf-model="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/guts_low_glb.gltf?v=1737522615755"
+        scale="0.1 0.1 0.1"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-entity>
+      
+      <a-entity 
+        id="lungs"
+        gltf-model="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/lungs.gltf?v=1737522609380"
+        scale="0.1 0.1 0.1"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-entity>
+      
+      <a-entity 
+        id="pechen"
+        gltf-model="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/pechen_low_glb.gltf?v=1737522628795"
+        scale="0.1 0.1 0.1"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-entity>
+      
+      <a-entity 
+        id="jeludok"
+        gltf-model="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/jeludok_low_glb.gltf?v=1737522633749"
+        scale="0.1 0.1 0.1"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-entity>
+      
+    </a-marker>
+
+    <!-- Add a simple light -->
+    <a-light type="directional" position="0 1 1"></a-light>
+
+    <!-- Default camera -->
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <!-- Dialog box for user input -->
+  <div id="dialog" style="display: none;">
+    <label for="userInput">Введите свой вопрос:</label>
+    <input type="text" id="userInput">
+    <button onclick="handleInput()">Отправить</button>
+  </div>
+
+  <!-- Bot response window -->
+  <div id="botResponseWindow" style="display: none;">
+    <h3>Ответ бота:</h3>
+    <p id="botResponse" style="font-weight: bold;"></p>
+  </div>
+
+  <!-- Bottom-left image -->
+  <img src="https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/piclkeric_closedmouthOpenedEyes.png?v=1737513757464" alt="Bottom Left Image" class="bottom-left-image">
+
+  <script>
+    const url = 'https://chat.botpress.cloud/608bd93e-c7f0-4d1e-be29-1edd343ec3a5/messages';
+    const dialog = document.getElementById('dialog');
+    const botResponseWindow = document.getElementById('botResponseWindow');
+    const botResponseElement = document.getElementById('botResponse');
+    
+    const pickle = document.getElementById('pickle');
+    const brain = document.getElementById('brain');
+    const heart = document.getElementById('heart');
+    const guts = document.getElementById('guts');
+    const lungs = document.getElementById('lungs');
+    const pechen = document.getElementById('pechen');
+    const jeludok = document.getElementById('jeludok');
+    
+    
+    brain.setAttribute("visible",false);
+    heart.setAttribute("visible",false);
+    guts.setAttribute("visible",false);
+    lungs.setAttribute("visible",false);
+    pechen.setAttribute("visible",false);
+    jeludok.setAttribute("visible",false);
+
+    // Show dialog when marker is detected
+    document.querySelector('a-marker').addEventListener('markerFound', () => {
+      dialog.style.display = 'block';
+    });
+
+    // Hide dialog and response window when marker is lost
+    document.querySelector('a-marker').addEventListener('markerLost', () => {
+      dialog.style.display = 'none';
+      botResponseWindow.style.display = 'none';
+    });
+
+    async function handleInput() {
+      const userInput = document.getElementById('userInput').value;
+
+      // Show the bot response window with loading message
+      botResponseElement.textContent = 'Отправка...';
+      botResponseWindow.style.display = 'block';
+      
+      const bottomLeftImage = document.querySelector('.bottom-left-image');
+      bottomLeftImage.src = 'https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/pickleric_openedmouthOpenedeyes.png?v=1737515360815';
+
+      const url = 'https://chat.botpress.cloud/3cfc36b8-b531-4715-9534-14bf4b7b6b11/messages';
+      const options = {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'x-user-key': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IkRlZmF1bHQiLCJpYXQiOjE3Mzc1MTI2NTF9.6r6gF4mLZXkM6CVQ_VUAKv-w63M-54kKZidvZZfLNAU',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({payload: {type: 'text', text: userInput}, conversationId: '1'})
+      };
+
+      
+        const botResponse = await fetch(url, options)
+        
+        if (botResponse.status === 200)
+        {
+          await new Promise(r => setTimeout(r, 20000));
+          GetResponse()
+        }
+      
+      document.getElementById('userInput').value = '';
+      
+      
+    }
+    
+    async function GetResponse() {
+
+
+      const url2 = 'https://chat.botpress.cloud/3cfc36b8-b531-4715-9534-14bf4b7b6b11/conversations/1/messages';
+      const options2 = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'x-user-key': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IkRlZmF1bHQiLCJpYXQiOjE3Mzc1MTI2NTF9.6r6gF4mLZXkM6CVQ_VUAKv-w63M-54kKZidvZZfLNAU'
+        }
+      };
+      const botResp0 = await fetch(url2, options2)
+      
+      const liMessages = await botResp0.json()
+      
+      const message = JSON.parse(liMessages.messages[0].payload.text);
+      const organ = message.organ;
+      const answer = message.answer;
+      
+      const lastBotMessageText = liMessages.messages[0].payload.text;
+      
+      UpdateModel(organ);
+      botResponseElement.textContent = answer;
+      
+         // Return the bottom-left image to its initial state
+      const bottomLeftImage = document.querySelector('.bottom-left-image');
+      bottomLeftImage.src = 'https://cdn.glitch.global/0fbf3449-8aa5-4be0-acfd-cc118b0a0a6b/piclkeric_closedmouthOpenedEyes.png?v=1737513757464';
+    }
+    
+    async function UpdateModel(organ){
+
+        if(organ == 'мозг'){
+          pickle.setAttribute("visible",false);
+          brain.setAttribute("visible",true);
+          heart.setAttribute("visible",false);
+          guts.setAttribute("visible",false);
+          lungs.setAttribute("visible",false);
+          pechen.setAttribute("visible",false);
+          jeludok.setAttribute("visible",false);
+        }
+        else if (organ == 'сердце')
+        {
+          pickle.setAttribute("visible",false);
+          brain.setAttribute("visible",false);
+          heart.setAttribute("visible",true);
+          guts.setAttribute("visible",false);
+          lungs.setAttribute("visible",false);
+          pechen.setAttribute("visible",false);
+          jeludok.setAttribute("visible",false);
+        }
+        else if (organ == 'кишечник')
+        {
+          pickle.setAttribute("visible",false);
+          brain.setAttribute("visible",false);
+          heart.setAttribute("visible",false);
+          guts.setAttribute("visible",true);
+          lungs.setAttribute("visible",false);
+          pechen.setAttribute("visible",false);
+          jeludok.setAttribute("visible",false);
+        }
+        else if (organ == 'легкие' || organ == 'лёгкие')
+        {
+          pickle.setAttribute("visible",false);
+          brain.setAttribute("visible",false);
+          heart.setAttribute("visible",false);
+          guts.setAttribute("visible",false);
+          lungs.setAttribute("visible",true);
+          pechen.setAttribute("visible",false);
+          jeludok.setAttribute("visible",false);
+        }
+        else if (organ == 'печень')
+        {
+          pickle.setAttribute("visible",false);
+          brain.setAttribute("visible",false);
+          heart.setAttribute("visible",false);
+          guts.setAttribute("visible",false);
+          lungs.setAttribute("visible",false);
+          pechen.setAttribute("visible",true);
+          jeludok.setAttribute("visible",false);
+        }
+        else if (organ == 'желудок')
+        {
+          pickle.setAttribute("visible",false);
+          brain.setAttribute("visible",false);
+          heart.setAttribute("visible",false);
+          guts.setAttribute("visible",false);
+          lungs.setAttribute("visible",false);
+          pechen.setAttribute("visible",false);
+          jeludok.setAttribute("visible",true);
+        }
+        else{
+          pickle.setAttribute("visible",true);
+          brain.setAttribute("visible",false);
+          heart.setAttribute("visible",false);
+          guts.setAttribute("visible",false);
+          lungs.setAttribute("visible",false);
+          pechen.setAttribute("visible",false);
+          jeludok.setAttribute("visible",false);
+        }
+    }
+  </script>
+</body>
+</html>
